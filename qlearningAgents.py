@@ -42,7 +42,9 @@ class QLearningAgent(ReinforcementAgent):
         "You can initialize Q-values here..."
         ReinforcementAgent.__init__(self, **args)
 
+        self.values = util.Counter()
         "*** YOUR CODE HERE ***"
+
 
     def getQValue(self, state, action):
         """
@@ -51,6 +53,7 @@ class QLearningAgent(ReinforcementAgent):
           or the Q node value otherwise
         """
         "*** YOUR CODE HERE ***"
+        return self.values[(state, action)]
         util.raiseNotDefined()
 
 
@@ -62,6 +65,15 @@ class QLearningAgent(ReinforcementAgent):
           terminal state, you should return a value of 0.0.
         """
         "*** YOUR CODE HERE ***"
+        actions = self.getLegalActions(state)
+        if len(actions) == 0:
+            return 0.0
+        maxValue = float("-inf") # set an -inf value to continuously get the max
+        for action in actions:
+          q = self.getQValue(state, action)
+          maxValue = max(maxValue, q)
+        return maxValue
+
         util.raiseNotDefined()
 
     def computeActionFromQValues(self, state):
@@ -71,6 +83,15 @@ class QLearningAgent(ReinforcementAgent):
           you should return None.
         """
         "*** YOUR CODE HERE ***"
+        actions = self.getLegalActions(state)
+        if len(actions) == 0:
+            return None
+        maxVal = self.computeValueFromQValues(state)
+        bestActions = []
+        for action in actions:
+            if self.getQValue(state, action) == maxVal: # if the q-val is equal to the max, then we want to consider that action as a valid option
+                bestActions.append(action)
+        return random.choice(bestActions)
         util.raiseNotDefined()
 
     def getAction(self, state):
@@ -88,6 +109,7 @@ class QLearningAgent(ReinforcementAgent):
         legalActions = self.getLegalActions(state)
         action = None
         "*** YOUR CODE HERE ***"
+        
         util.raiseNotDefined()
 
         return action
@@ -102,7 +124,13 @@ class QLearningAgent(ReinforcementAgent):
           it will be called on your behalf
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        currQ_val = self.getQValue(state, action)
+        nextVal = self.computeValueFromQValues(nextState)
+        sample = reward + self.discount * nextVal # computing the sample 
+
+        self.values[(state, action)] = currQ_val + self.alpha*(sample - currQ_val)
+
+        # util.raiseNotDefined()
 
     def getPolicy(self, state):
         return self.computeActionFromQValues(state)
